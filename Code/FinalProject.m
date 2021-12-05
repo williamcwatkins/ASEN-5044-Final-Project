@@ -270,10 +270,19 @@ sgtitle('States vs Time, Linearized Approximate Dynamics Soluiton')
 
 % Measurement Lin
 for ii = 1:12
+    rhoLinPert(:, ii) = sqrt((pertX(1,:)' - TS_X(:, ii)).^2 + (pertX(3,:)' - TS_Y(:, ii)).^2);
+    rho_dotLinPert(:, ii) = ((pertX(1,:)' - TS_X(:, ii)).*(pertX(2,:)' - TS_Xdot(:, ii)) + (pertX(3,:)' - TS_Y(:, ii)).*(pertX(4,:)' - TS_Ydot(:, ii)))./rhoLinPert(:, ii);
+    phiLinPert(:, ii) = atan2((pertX(3,:)' - TS_Y(:, ii)), (pertX(1,:)' - TS_X(:, ii)));
+end
+for ii = 1:12
     rhoLin(:, ii) = sqrt((LinX(1,:)' - TS_X(:, ii)).^2 + (LinX(3,:)' - TS_Y(:, ii)).^2);
     rho_dotLin(:, ii) = ((LinX(1,:)' - TS_X(:, ii)).*(LinX(2,:)' - TS_Xdot(:, ii)) + (LinX(3,:)' - TS_Y(:, ii)).*(LinX(4,:)' - TS_Ydot(:, ii)))./rhoLin(:, ii);
     phiLin(:, ii) = atan2((LinX(3,:)' - TS_Y(:, ii)), (LinX(1,:)' - TS_X(:, ii)));
 end
+
+rhoLinNom(:,:) = rhoLin + rhoLinPert;
+rhoDotLinNom = rho_dotLinPert + rho_dotLin;
+phiLinNom = phiLin + phiLinPert;
 
 figure
 hold on
@@ -282,21 +291,22 @@ title(tl, "Approximate Linearized Model Data Simulation");
 xlabel(tl, "Time (secs)");
 nexttile
 hold on
+DEBUG = 0;
 for ii = 1:12
-    vis_index = find((phiLin(:, ii) <= (pi/2 + thetaCompare(:, ii)) & phiLin(:, ii) >= (-pi/2 + thetaCompare(:, ii))) | ...
-            (phiLin(:, ii) <= (pi/2 + thetaBound1Pos(:, ii)) & phiLin(:, ii) >= (-pi/2 + thetaBound1Neg(:, ii))) | ...
-            (phiLin(:, ii) <= (pi/2 + thetaBound2Pos(:, ii)) & phiLin(:, ii) >= (-pi/2 + thetaBound2Neg(:, ii))));
+    vis_index = find((phiLinNom(:, ii) <= (pi/2 + thetaCompare(:, ii)) & phiLinNom(:, ii) >= (-pi/2 + thetaCompare(:, ii))) | ...
+            (phiLinNom(:, ii) <= (pi/2 + thetaBound1Pos(:, ii)) & phiLinNom(:, ii) >= (-pi/2 + thetaBound1Neg(:, ii))) | ...
+            (phiLinNom(:, ii) <= (pi/2 + thetaBound2Pos(:, ii)) & phiLinNom(:, ii) >= (-pi/2 + thetaBound2Neg(:, ii))));
     if(DEBUG == 1)
-        plot(Time_out, pi/2 + thetaBound1Pos(:,ii));
-        hold on
-        plot(Time_out, -pi/2 + thetaBound1Neg(:,ii));
-        plot(Time_out, phi(:,ii));
+%         plot(Time_out, pi/2 + thetaBound1Pos(:,ii));
+% %         hold on
+%         plot(Time_out, -pi/2 + thetaBound1Neg(:,ii));
+        plot(Time_out, phiLin(:,ii));
         plot(Time_out, theta_TS(:,ii));
-        scatter(Time_out(vis_index), phi(vis_index, ii)) 
+        scatter(Time_out(vis_index), phiLin(vis_index, ii)) 
         yline(pi);
         yline(-pi);
     end
-    scatter(Time_out(vis_index), rhoLin(vis_index,ii));
+     scatter(Time_out(vis_index), rhoLinNom(vis_index,ii));
     ylabel('rho^i (km)');
 end
 
