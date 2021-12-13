@@ -277,21 +277,40 @@ sgtitle('States vs Time, Linearized Approximate Dynamics Soluiton')
 %     phiLinPert(:, ii) = atan2((pertX(3,:)' - TS_Y(:, ii)), (pertX(1,:)' - TS_X(:, ii)));
 % end
 
-for ii = 1:12
-    rhoLinPert(:, ii) = sqrt((pertX(1,:)').^2 + (pertX(3,:)').^2);
-    rho_dotLinPert(:, ii) = ((pertX(1,:)').*(pertX(2,:)') + (pertX(3,:)').*(pertX(4,:)'))./rhoLinPert(:, ii);
-    phiLinPert(:, ii) = atan2((pertX(3,:)'), (pertX(1,:)'));
+for j = 1:12
+%     pertY(1,1) = sqrt((pertX(1,1)' - TS_X(1, j)).^2 + (pertX(3,1)' - TS_Y(1, j)).^2);
+%     pertY(2,1) = ((pertX(1,1)' - TS_X(1, j)).*(pertX(2,1)' - TS_Xdot(1, j)) + (pertX(3,1)' - TS_Y(1, j)).*(pertX(4,1)' - TS_Ydot(1, j)))./pertY(1, 1);
+%     pertY(3,1) = atan2((pertX(3,1)' - TS_Y(1, j)), (pertX(1,1)' - TS_X(1, j)));
+    for ii = 1:1401
+        x1 = nomCon(1,ii);
+        x2 = nomCon(2,ii);
+        x3 = nomCon(3,ii);
+        x4 = nomCon(4,ii);
+        z1 = TS_X(ii,1);
+        z2 = TS_Xdot(ii,1);
+        z3 = TS_Y(ii,1);
+        z4 = TS_Ydot(ii,1);
+        Cnom = subs(C);
+
+        H = Cnom;
+        pertY(:, ii) = H*pertX(:, ii);
+    end
+    
+    rhoLinPert(:,j) = pertY(1,:)';
+    rho_dotLinPert(:,j) = pertY(2,:)';
+    phiLinPert(:,j) = pertY(3,:)';
+
+    rhoLin(:, j) = sqrt((nomCon(1,:)' - TS_X(:, j)).^2 + (nomCon(3,:)' - TS_Y(:, j)).^2);
+    rho_dotLin(:, j) = ((nomCon(1,:)' - TS_X(:, j)).*(nomCon(2,:)' - TS_Xdot(:, j)) + (nomCon(3,:)' - TS_Y(:, j)).*(nomCon(4,:)' - TS_Ydot(:, j)))./rhoLin(:, j);
+    phiLin(:, j) = atan2((nomCon(3,:)' - TS_Y(:, j)), (nomCon(1,:)' - TS_X(:, j)));
+%     rhoLin(:, j) = sqrt((LinX(1,:)' - TS_X(:, j)).^2 + (LinX(3,:)' - TS_Y(:, j)).^2);
+%     rho_dotLin(:, j) = ((LinX(1,:)' - TS_X(:, j)).*(LinX(2,:)' - TS_Xdot(:, j)) + (LinX(3,:)' - TS_Y(:, j)).*(LinX(4,:)' - TS_Ydot(:, j)))./rhoLin(:, j);
+%     phiLin(:, j) = atan2((LinX(3,:)' - TS_Y(:, j)), (LinX(1,:)' - TS_X(:, j)));
 end
 
-for ii = 1:12
-    rhoLin(:, ii) = sqrt((LinX(1,:)' - TS_X(:, ii)).^2 + (LinX(3,:)' - TS_Y(:, ii)).^2);
-    rho_dotLin(:, ii) = ((LinX(1,:)' - TS_X(:, ii)).*(LinX(2,:)' - TS_Xdot(:, ii)) + (LinX(3,:)' - TS_Y(:, ii)).*(LinX(4,:)' - TS_Ydot(:, ii)))./rhoLin(:, ii);
-    phiLin(:, ii) = atan2((LinX(3,:)' - TS_Y(:, ii)), (LinX(1,:)' - TS_X(:, ii)));
-end
-
-rhoLinNom(:,:) = rho + rhoLinPert;
-rhoDotLinNom = rho_dotLinPert + rho_dot;
-phiLinNom = phi + phiLinPert;
+rhoLinNom = rhoLin + rhoLinPert;
+rhoDotLinNom = rho_dotLin + rho_dotLinPert;
+phiLinNom = phiLin + phiLinPert;
 
 figure
 hold on
@@ -302,9 +321,12 @@ nexttile
 hold on
 DEBUG = 0;
 for ii = 1:12
-    vis_index = find((phiLinNom(:, ii) <= (pi/2 + thetaCompare(:, ii)) & phiLinNom(:, ii) >= (-pi/2 + thetaCompare(:, ii))) | ...
-            (phiLinNom(:, ii) <= (pi/2 + thetaBound1Pos(:, ii)) & phiLinNom(:, ii) >= (-pi/2 + thetaBound1Neg(:, ii))) | ...
-            (phiLinNom(:, ii) <= (pi/2 + thetaBound2Pos(:, ii)) & phiLinNom(:, ii) >= (-pi/2 + thetaBound2Neg(:, ii))));
+    vis_index = find((phiCompare(:, ii) <= (pi/2 + thetaCompare(:, ii)) & phiCompare(:, ii) >= (-pi/2 + thetaCompare(:, ii))) | ...
+            (phiCompare(:, ii) <= (pi/2 + thetaBound1Pos(:, ii)) & phiCompare(:, ii) >= (-pi/2 + thetaBound1Neg(:, ii))) | ...
+            (phiCompare(:, ii) <= (pi/2 + thetaBound2Pos(:, ii)) & phiCompare(:, ii) >= (-pi/2 + thetaBound2Neg(:, ii))));
+%     vis_index = find((phiLinNom(:, ii) <= (pi/2 + thetaCompare(:, ii)) & phiLinNom(:, ii) >= (-pi/2 + thetaCompare(:, ii))) | ...
+%             (phiLinNom(:, ii) <= (pi/2 + thetaBound1Pos(:, ii)) & phiLinNom(:, ii) >= (-pi/2 + thetaBound1Neg(:, ii))) | ...
+%             (phiLinNom(:, ii) <= (pi/2 + thetaBound2Pos(:, ii)) & phiLinNom(:, ii) >= (-pi/2 + thetaBound2Neg(:, ii))));
     if(DEBUG == 1)
 %         plot(Time_out, pi/2 + thetaBound1Pos(:,ii));
 % %         hold on
@@ -315,34 +337,34 @@ for ii = 1:12
         yline(pi);
         yline(-pi);
     end
-     scatter(Time_out(vis_index), rhoLin(vis_index,ii));
+     scatter(Time_out(vis_index), rhoLinNom(vis_index,ii));
     ylabel('rho^i (km)');
 end
 
 nexttile
 hold on
 for ii = 1:12
-    vis_index = find((phiLin(:, ii) <= (pi/2 + thetaCompare(:, ii)) & phiLin(:, ii) >= (-pi/2 + thetaCompare(:, ii))) | ...
-            (phiLin(:, ii) <= (pi/2 + thetaBound1Pos(:, ii)) & phiLin(:, ii) >= (-pi/2 + thetaBound1Neg(:, ii))) | ...
-            (phiLin(:, ii) <= (pi/2 + thetaBound2Pos(:, ii)) & phiLin(:, ii) >= (-pi/2 + thetaBound2Neg(:, ii))));
-    scatter(Time_out(vis_index), rho_dotLin(vis_index,ii));
+    vis_index = find((phiCompare(:, ii) <= (pi/2 + thetaCompare(:, ii)) & phiCompare(:, ii) >= (-pi/2 + thetaCompare(:, ii))) | ...
+            (phiCompare(:, ii) <= (pi/2 + thetaBound1Pos(:, ii)) & phiCompare(:, ii) >= (-pi/2 + thetaBound1Neg(:, ii))) | ...
+            (phiCompare(:, ii) <= (pi/2 + thetaBound2Pos(:, ii)) & phiCompare(:, ii) >= (-pi/2 + thetaBound2Neg(:, ii))));
+    scatter(Time_out(vis_index), rhoDotLinNom(vis_index,ii));
     ylabel('rhodot^i (km/s)');
 end
 nexttile
 hold on
 for ii = 1:12
-    vis_index = find((phiLin(:, ii) <= (pi/2 + thetaCompare(:, ii)) & phiLin(:, ii) >= (-pi/2 + thetaCompare(:, ii))) | ...
-            (phiLin(:, ii) <= (pi/2 + thetaBound1Pos(:, ii)) & phiLin(:, ii) >= (-pi/2 + thetaBound1Neg(:, ii))) | ...
-            (phiLin(:, ii) <= (pi/2 + thetaBound2Pos(:, ii)) & phiLin(:, ii) >= (-pi/2 + thetaBound2Neg(:, ii))));
+    vis_index = find((phiCompare(:, ii) <= (pi/2 + thetaCompare(:, ii)) & phiCompare(:, ii) >= (-pi/2 + thetaCompare(:, ii))) | ...
+            (phiCompare(:, ii) <= (pi/2 + thetaBound1Pos(:, ii)) & phiCompare(:, ii) >= (-pi/2 + thetaBound1Neg(:, ii))) | ...
+            (phiCompare(:, ii) <= (pi/2 + thetaBound2Pos(:, ii)) & phiCompare(:, ii) >= (-pi/2 + thetaBound2Neg(:, ii))));
     scatter(Time_out(vis_index), phiLinNom(vis_index,ii));
     ylabel('\phi^i (rads)');
 end
 nexttile
 hold on
 for ii = 1:12
-    vis_index = find((phiLin(:, ii) <= (pi/2 + thetaCompare(:, ii)) & phiLin(:, ii) >= (-pi/2 + thetaCompare(:, ii))) | ...
-            (phiLin(:, ii) <= (pi/2 + thetaBound1Pos(:, ii)) & phiLin(:, ii) >= (-pi/2 + thetaBound1Neg(:, ii))) | ...
-            (phiLin(:, ii) <= (pi/2 + thetaBound2Pos(:, ii)) & phiLin(:, ii) >= (-pi/2 + thetaBound2Neg(:, ii))));
+    vis_index = find((phiCompare(:, ii) <= (pi/2 + thetaCompare(:, ii)) & phiCompare(:, ii) >= (-pi/2 + thetaCompare(:, ii))) | ...
+            (phiCompare(:, ii) <= (pi/2 + thetaBound1Pos(:, ii)) & phiCompare(:, ii) >= (-pi/2 + thetaBound1Neg(:, ii))) | ...
+            (phiCompare(:, ii) <= (pi/2 + thetaBound2Pos(:, ii)) & phiCompare(:, ii) >= (-pi/2 + thetaBound2Neg(:, ii))));
     scatter(Time_out(vis_index), visibleStation(vis_index,ii));
     ylabel('Visible Station ID');
 end
