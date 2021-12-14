@@ -288,7 +288,7 @@ set(gca, 'FontSize', 14)
 
 sgtitle('States vs Time, Linearized Approximate Dynamics Soluiton')
 
-%% Everything below here is wrong
+%% Lin MEasurements
 
 for j = 1:12
     for i = 1:1401
@@ -1297,3 +1297,466 @@ grid on
 set(gca, 'FontSize', 14)
 
 sgtitle('TMT Simulated States')
+
+%% A Solver
+function [Atil] = Atil_Solver(State)
+
+mu = 398600; % Earth's standard gravitational paremters [km^3/s^2]
+
+x1 = State(1);
+% x2 = State(2);
+x3 = State(3);
+% x4 = State(4);
+
+Atil = [0, 1, 0, 0;
+    (3*mu*x1^2)/(x1^2 + x3^2)^(5/2) - mu/(x1^2 + x3^2)^(3/2), 0, (3*mu*x1*x3)/(x1^2 + x3^2)^(5/2), 0;
+    0, 0, 0, 1;
+    (3*mu*x1*x3)/(x1^2 + x3^2)^(5/2), 0, (3*mu*x3^2)/(x1^2 + x3^2)^(5/2) - mu/(x1^2 + x3^2)^(3/2), 0];
+
+end
+
+%% C Solver
+function [Ctil] = Ctil_Solver(State, TS_State)
+
+x1 = State(1);
+x2 = State(2);
+x3 = State(3);
+x4 = State(4);
+
+z1 = TS_State(1);
+z2 = TS_State(2);
+z3 = TS_State(3);
+z4 = TS_State(4);
+
+Ctil = [(2*x1 - 2*z1)/(2*((x1 - z1)^2 + (x3 - z3)^2)^(1/2)), 0, (2*x3 - 2*z3)/(2*((x1 - z1)^2 + (x3 - z3)^2)^(1/2)), 0;
+    (x2 - z2)/((x1 - z1)^2 + (x3 - z3)^2)^(1/2) - ((2*x1 - 2*z1)*((x1 - z1)*(x2 - z2) + (x3 - z3)*(x4 - z4)))/(2*((x1 - z1)^2 + (x3 - z3)^2)^(3/2)), (x1 - z1)/((x1 - z1)^2 + (x3 - z3)^2)^(1/2), (x4 - z4)/((x1 - z1)^2 + (x3 - z3)^2)^(1/2) - ((2*x3 - 2*z3)*((x1 - z1)*(x2 - z2) + (x3 - z3)*(x4 - z4)))/(2*((x1 - z1)^2 + (x3 - z3)^2)^(3/2)), (x3 - z3)/((x1 - z1)^2 + (x3 - z3)^2)^(1/2);
+    -(x3 - z3)/((x1 - z1)^2*((x3 - z3)^2/(x1 - z1)^2 + 1)), 0, 1/((x1 - z1)*((x3 - z3)^2/(x1 - z1)^2 + 1)), 0];
+
+end
+
+%% EKF StatOD
+function [P, x, x_stds, eytil, S] = EKF_StatOD(x0, P0, ydata, dt, tvec, Q, R, Gamma, TS_state)
+
+
+% DEAL WITH MULT Measurement values!!!!!!!
+
+% Matrix sizes and Steps
+n = length(x0); % number of states
+p = length(ydata{1}) - 1; % number of measurments, subtract one since it has GND station ID 
+steps = length(ydata); % number of steps for problem; step 1 is the zero time vec
+
+%mu = 398600; % Earth's standard gravitational paremters [km^3/s^2]
+Omega = dt*Gamma; % Since CT Gamma matrix is LTI we can compute Omega outside EKF loop
+
+% ODE Tolerances
+Rel_Tol = 1e-13;
+Abs_Tol = Rel_Tol;
+options = odeset('Stats', 'off', 'RelTol', Rel_Tol, 'AbsTol', Abs_Tol);
+
+% initilaize variables for speed
+x.neg(1:n, 1) = NaN*ones(n, 1);
+x.pos(:, 1) = x0;
+
+P.neg(1:n, 1:n, 1) = NaN*ones(n);
+P.pos(:, :, 1) = P0;
+
+x_stds(1:n, 1) = sqrt(diag(P0));
+
+eytil = NaN*ones(2*p, 1);
+
+S = NaN*ones(2*p, 2*p, steps);
+
+y = NaN*ones(2*p, steps);
+TS_ID = NaN*ones(2, steps);
+c = NaN*ones(1, steps);
+
+% Parse ydata into own data vector and GND station IDS
+for ii = 1:steps
+    if ~isempty(ydata{ii})
+        [~, c(ii)] = size(ydata{ii});
+        if c(ii) == 1
+            y(1:3, ii) = ydata{ii}(1:3);
+            TS_ID(1, ii) = ydata{ii}(4);
+        elseif c(ii) == 2
+            y(1:3, ii) = ydata{ii}(1:3, 1);
+            TS_ID(1, ii) = ydata{ii}(4, 1);
+            y(4:6, ii) = ydata{ii}(1:3, 2);
+            TS_ID(2, ii) = ydata{ii}(4, 2);
+        end
+    end
+end
+
+No_Meas_index = isnan(TS_ID(1, :));
+
+% EKF Loop
+for ii = 2:steps
+   % Prediction Step
+   tspan = [tvec(ii-1) tvec(ii)];
+   [~, NL_state] = ode45(@(Time, State) StatODNL_ODE(Time, State), tspan, x.pos(:, ii-1)', options);
+   x.neg(:, ii) = NL_state(end, :)';
+
+   % NL and Jacobian Computaion (Part of Prediction Step)
+   Atil = Atil_Solver(x.pos(:, ii-1));
+   
+   Ftil = eye(n) + dt*Atil;
+   P.neg(:, :, ii) = Ftil*P.pos(:, :, ii-1)*Ftil' + Omega*Q*Omega';
+   
+   % Correction Step
+   if No_Meas_index(ii) == 0 % There are Measurments
+       if c(ii) == 1
+           z1 = TS_state(ii, TS_ID(1, ii), 1);
+           z2 = TS_state(ii, TS_ID(1, ii), 2);
+           z3 = TS_state(ii, TS_ID(1, ii), 3);
+           z4 = TS_state(ii, TS_ID(1, ii), 4);
+           TS_stateK = [z1; z2; z3; z4];
+
+           y_neg = StatOD_NLMeasurement(x.neg(:, ii), TS_stateK);
+
+           Htil = Ctil_Solver(x.neg(:, ii), TS_stateK);
+
+           eytil(1:3, ii) = y(1:3, ii) - y_neg;
+
+           Ktil = P.neg(:, :, ii)*Htil'*(Htil*P.neg(:, :, ii)*Htil' + R)^-1;
+
+           x.pos(:, ii) = x.neg(:, ii) + Ktil*eytil(1:3, ii);
+           P.pos(:, :, ii) = (eye(n) - Ktil*Htil)*P.neg(:, :, ii);
+
+           S(1:p, 1:p, ii) = Htil*P.neg(:, :, ii)*Htil' + R;
+       
+       elseif c(ii) == 2
+           % first measurment
+           z1 = TS_state(ii, TS_ID(1, ii), 1);
+           z2 = TS_state(ii, TS_ID(1, ii), 2);
+           z3 = TS_state(ii, TS_ID(1, ii), 3);
+           z4 = TS_state(ii, TS_ID(1, ii), 4);
+           TS_stateK = [z1; z2; z3; z4];
+
+           y_neg_1 = StatOD_NLMeasurement(x.neg(:, ii), TS_stateK);
+
+           Htil_1 = Ctil_Solver(x.neg(:, ii), TS_stateK);
+
+           eytil(1:3, ii) = y(1:3, ii) - y_neg_1;
+           Ktil_1 = P.neg(:, :, ii)*Htil_1'*(Htil_1*P.neg(:, :, ii)*Htil_1' + R)^-1;
+           
+           % second measurment
+           z1 = TS_state(ii, TS_ID(2, ii), 1);
+           z2 = TS_state(ii, TS_ID(2, ii), 2);
+           z3 = TS_state(ii, TS_ID(2, ii), 3);
+           z4 = TS_state(ii, TS_ID(2, ii), 4);
+           TS_stateK = [z1; z2; z3; z4];
+
+           y_neg_2 = StatOD_NLMeasurement(x.neg(:, ii), TS_stateK);
+
+           Htil_2 = Ctil_Solver(x.neg(:, ii), TS_stateK);
+
+           eytil(4:6, ii) = y(4:6, ii) - y_neg_2;
+           
+           Ktil_2 = P.neg(:, :, ii)*Htil_2'*(Htil_2*P.neg(:, :, ii)*Htil_2' + R)^-1;
+           
+           % Combined
+           Pblock = blkdiag(P.neg(:, :, ii), P.neg(:, :, ii));
+           Hblock = blkdiag(Htil_1, Htil_2);
+           Rblock = blkdiag(R, R);
+           
+           x.pos(:, ii) = x.neg(:, ii) + Ktil_1*eytil(1:3, ii) + Ktil_2*eytil(4:6, ii);
+           P.pos(:, :, ii) =  P.neg(:, :, ii) - Ktil_1*Htil_1*P.neg(:, :, ii) - Ktil_2*Htil_2*P.neg(:, :, ii);
+           
+           S(:, :, ii) = Hblock*Pblock*Hblock' + Rblock;
+       end      
+   else % No Measurements
+       x.pos(:, ii) = x.neg(:, ii);
+       P.pos(:, :, ii) = P.neg(:, :, ii);
+       eytil(:, ii) = NaN*ones(2*p, 1);
+   end
+   
+   % Standard Deviations
+   x_stds(:, ii) = sqrt(diag(P.pos(:, :, ii)));
+   
+end
+
+end
+
+%% LKF StatOD
+function [P, dx, x_stds, eytil, S] = LKF_StatOD(dx0, P0, ydata, dt, Q, R, Gamma, TS_state, Nom_State)
+
+% Matrix sizes and Steps
+n = length(dx0); % number of states
+p = length(ydata{1}) - 1; % number of measurments, subtract one since it has GND station ID 
+steps = length(ydata); % number of steps for problem; step 1 is the zero time vec
+
+Omega = dt*Gamma; % Since CT Gamma matrix is LTI we can compute Omega outside EKF loop
+
+% initilaize variables for speed
+dx.neg(1:n, 1) = NaN*ones(n, 1);
+dx.pos(:, 1) = dx0;
+
+P.neg(1:n, 1:n, 1) = NaN*ones(n);
+P.pos(:, :, 1) = P0;
+
+x_stds(1:n, 1) = sqrt(diag(P0));
+
+eytil = NaN*ones(2*p, 1);
+
+S = NaN*ones(2*p, 2*p, steps);
+
+y = NaN*ones(2*p, steps);
+TS_ID = NaN*ones(2, steps);
+c = NaN*ones(1, steps);
+
+% Parse ydata into own data vector and GND station IDS
+for ii = 1:steps
+    if ~isempty(ydata{ii})
+        [~, c(ii)] = size(ydata{ii});
+        if c(ii) == 1
+            y(1:3, ii) = ydata{ii}(1:3);
+            TS_ID(1, ii) = ydata{ii}(4);
+        elseif c(ii) == 2
+            y(1:3, ii) = ydata{ii}(1:3, 1);
+            TS_ID(1, ii) = ydata{ii}(4, 1);
+            y(4:6, ii) = ydata{ii}(1:3, 2);
+            TS_ID(2, ii) = ydata{ii}(4, 2);
+        end
+    end
+end
+
+No_Meas_index = isnan(TS_ID(1, :));
+
+% LKF Loop
+for ii = 2:steps
+    % Prediction Step
+    Atil = Atil_Solver(Nom_State(ii-1, :));
+    Ftil = eye(n) + dt*Atil;
+    
+    dx.neg(:, ii) = Ftil*dx.pos(:, ii-1);
+    
+    P.neg(:, :, ii) = Ftil*P.pos(:, :, ii-1)*Ftil' + Omega*Q*Omega';
+    
+    % Correction Step %%% Deal with multiple measurments
+    if No_Meas_index(ii) == 0 % There are Measurments
+        if c(ii) == 1
+        z1 = TS_state(ii, TS_ID(1, ii), 1);
+        z2 = TS_state(ii, TS_ID(1, ii), 2);
+        z3 = TS_state(ii, TS_ID(1, ii), 3);
+        z4 = TS_state(ii, TS_ID(1, ii), 4);
+        TS_stateK = [z1; z2; z3; z4];
+        
+        Htil = Ctil_Solver(Nom_State(ii, :), TS_stateK);
+        
+        Ktil = P.neg(:, :, ii)*Htil'*(Htil*P.neg(:, :, ii)*Htil' + R)^-1;
+        
+        y_nom = StatOD_NLMeasurement(Nom_State(ii, :), TS_stateK);
+        
+        dy = y(1:3, ii) - y_nom;
+        
+        dx.pos(:, ii) = dx.neg(:, ii) + Ktil*(dy - Htil*dx.neg(:, ii));
+        
+        P.pos(:, :, ii) = (eye(n) - Ktil*Htil)*P.neg(:, :, ii);
+        
+        S(1:3, 1:3, ii) = Htil*P.neg(:, :, ii)*Htil' + R;
+        eytil(1:3, ii) = dy - Htil*dx.neg(:, ii);
+        
+        elseif c(ii) == 2
+            % First measurment
+            z1 = TS_state(ii, TS_ID(1, ii), 1);
+            z2 = TS_state(ii, TS_ID(1, ii), 2);
+            z3 = TS_state(ii, TS_ID(1, ii), 3);
+            z4 = TS_state(ii, TS_ID(1, ii), 4);
+            TS_stateK = [z1; z2; z3; z4];
+
+            Htil_1 = Ctil_Solver(Nom_State(ii, :), TS_stateK);
+
+            Ktil_1 = P.neg(:, :, ii)*Htil_1'*(Htil_1*P.neg(:, :, ii)*Htil_1' + R)^-1;
+
+            y_nom_1 = StatOD_NLMeasurement(Nom_State(ii, :), TS_stateK);
+
+            dy_1 = y(1:3, ii) - y_nom_1;
+            
+            eytil(1:3, ii) = dy_1 - Htil_1*dx.neg(:, ii);
+            
+            % Second measurment
+            z1 = TS_state(ii, TS_ID(2, ii), 1);
+            z2 = TS_state(ii, TS_ID(2, ii), 2);
+            z3 = TS_state(ii, TS_ID(2, ii), 3);
+            z4 = TS_state(ii, TS_ID(2, ii), 4);
+            TS_stateK = [z1; z2; z3; z4];
+
+            Htil_2 = Ctil_Solver(Nom_State(ii, :), TS_stateK);
+
+            Ktil_2 = P.neg(:, :, ii)*Htil_2'*(Htil_2*P.neg(:, :, ii)*Htil_2' + R)^-1;
+
+            y_nom_2 = StatOD_NLMeasurement(Nom_State(ii, :), TS_stateK);
+
+            dy_2 = y(4:6, ii) - y_nom_2;
+            
+            eytil(4:6, ii) = dy_2 - Htil_2*dx.neg(:, ii);
+            
+            % Combined 
+            Pblock = blkdiag(P.neg(:, :, ii), P.neg(:, :, ii));
+            Hblock = blkdiag(Htil_1, Htil_2);
+            Rblock = blkdiag(R, R);
+            
+            dx.pos(:, ii) = dx.neg(:, ii) + Ktil_1*(dy_1 - Htil_1*dx.neg(:, ii)) + Ktil_2*(dy_2 - Htil_2*dx.neg(:, ii));
+        
+            P.pos(:, :, ii) = P.neg(:, :, ii) - Ktil_1*Htil_1*P.neg(:, :, ii) - Ktil_2*Htil_2*P.neg(:, :, ii);
+            
+            S(:, :, ii) = Hblock*Pblock*Hblock' + Rblock;
+            
+        end      
+    else
+       dx.pos(:, ii) = dx.neg(:, ii);
+       P.pos(:, :, ii) = P.neg(:, :, ii);
+       eytil(:, ii) = NaN*ones(2*p, 1);
+    end
+    
+    % Standard Deviations
+    x_stds(:, ii) = sqrt(diag(P.pos(:, :, ii))); 
+    
+end
+
+end
+
+%% StatOD NonLinear Measurements
+function [y] = StatOD_NLMeasurement(Sat_state, TS_state)
+
+X = Sat_state(1);
+Xdot = Sat_state(2);
+Y = Sat_state(3);
+Ydot = Sat_state(4);
+
+Xi = TS_state(1);
+Xidot = TS_state(2);
+Yi = TS_state(3);
+Yidot = TS_state(4);
+
+rho = sqrt((X - Xi)^2 + (Y - Yi)^2);
+rhodot = ((X - Xi)*(Xdot - Xidot) + (Y - Yi)*(Ydot - Yidot))/sqrt((X - Xi)^2 + (Y - Yi)^2);
+phi = atan2(Y - Yi, X - Xi);
+
+y = [rho; rhodot; phi];
+
+end
+
+%% Stat OD NonLinear Noise ODE
+function [State_Derivatives] = StatODNL_noise_ODE(Time, State)
+
+u = 398600; % Earth's standard gravitational paremters [km^3/s^2]
+
+X = State(1);
+Xdot = State(2);
+Y = State(3);
+Ydot = State(4);
+
+r = sqrt(X^2 + Y^2);
+
+w1 = State(5);
+w2 = State(6);
+
+Xddot = -u*X/r^3 + w1;
+Yddot = -u*Y/r^3 + w2;
+
+State_Derivatives = [Xdot; Xddot; Ydot; Yddot; 0; 0];
+
+end
+
+%% StatOD NonLinear ODE
+function [State_Derivatives] = StatODNL_ODE(Time, State)
+
+u = 398600; % Earth's standard gravitational paremters [km^3/s^2]
+
+X = State(1);
+Xdot = State(2);
+Y = State(3);
+Ydot = State(4);
+
+r = sqrt(X^2 + Y^2);
+
+Xddot = -u*X/r^3;
+Yddot = -u*Y/r^3;
+
+State_Derivatives = [Xdot; Xddot; Ydot; Yddot];
+
+end
+
+%% Vary Color
+function ColorSet=varycolor(NumberOfPlots)
+% VARYCOLOR Produces colors with maximum variation on plots with multiple
+% lines.
+%
+%     VARYCOLOR(X) returns a matrix of dimension X by 3.  The matrix may be
+%     used in conjunction with the plot command option 'color' to vary the
+%     color of lines.  
+%
+%     Yellow and White colors were not used because of their poor
+%     translation to presentations.
+% 
+%     Example Usage:
+%         NumberOfPlots=50;
+%
+%         ColorSet=varycolor(NumberOfPlots);
+% 
+%         figure
+%         hold on;
+% 
+%         for m=1:NumberOfPlots
+%             plot(ones(20,1)*m,'Color',ColorSet(m,:))
+%         end
+%Created by Daniel Helmick 8/12/2008
+error(nargchk(1,1,nargin))%correct number of input arguements??
+error(nargoutchk(0, 1, nargout))%correct number of output arguements??
+%Take care of the anomolies
+if NumberOfPlots<1
+    ColorSet=[];
+elseif NumberOfPlots==1
+    ColorSet=[0 1 0];
+elseif NumberOfPlots==2
+    ColorSet=[0 1 0; 0 1 1];
+elseif NumberOfPlots==3
+    ColorSet=[0 1 0; 0 1 1; 0 0 1];
+elseif NumberOfPlots==4
+    ColorSet=[0 1 0; 0 1 1; 0 0 1; 1 0 1];
+elseif NumberOfPlots==5
+    ColorSet=[0 1 0; 0 1 1; 0 0 1; 1 0 1; 1 0 0];
+elseif NumberOfPlots==6
+    ColorSet=[0 1 0; 0 1 1; 0 0 1; 1 0 1; 1 0 0; 0 0 0];
+else %default and where this function has an actual advantage
+    %we have 5 segments to distribute the plots
+    EachSec=floor(NumberOfPlots/5); 
+    
+    %how many extra lines are there? 
+    ExtraPlots=mod(NumberOfPlots,5); 
+    
+    %initialize our vector
+    ColorSet=zeros(NumberOfPlots,3);
+    
+    %This is to deal with the extra plots that don't fit nicely into the
+    %segments
+    Adjust=zeros(1,5);
+    for m=1:ExtraPlots
+        Adjust(m)=1;
+    end
+    
+    SecOne   =EachSec+Adjust(1);
+    SecTwo   =EachSec+Adjust(2);
+    SecThree =EachSec+Adjust(3);
+    SecFour  =EachSec+Adjust(4);
+    SecFive  =EachSec;
+    for m=1:SecOne
+        ColorSet(m,:)=[0 1 (m-1)/(SecOne-1)];
+    end
+    for m=1:SecTwo
+        ColorSet(m+SecOne,:)=[0 (SecTwo-m)/(SecTwo) 1];
+    end
+    
+    for m=1:SecThree
+        ColorSet(m+SecOne+SecTwo,:)=[(m)/(SecThree) 0 1];
+    end
+    
+    for m=1:SecFour
+        ColorSet(m+SecOne+SecTwo+SecThree,:)=[1 0 (SecFour-m)/(SecFour)];
+    end
+    for m=1:SecFive
+        ColorSet(m+SecOne+SecTwo+SecThree+SecFour,:)=[(SecFive-m)/(SecFive) 0 0];
+    end
+    
+end
+
