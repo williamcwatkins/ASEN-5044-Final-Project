@@ -121,14 +121,11 @@ for ii = 2:steps
            Hblock = blkdiag(Htil_1, Htil_2);
            Rblock = blkdiag(R, R);
            
-           Kblock = Pblock*Hblock'*(Hblock*Pblock*Hblock' + Rblock)^-1;
-           
            x.pos(:, ii) = x.neg(:, ii) + Ktil_1*eytil(1:3, ii) + Ktil_2*eytil(4:6, ii);
            P.pos(:, :, ii) =  P.neg(:, :, ii) - Ktil_1*Htil_1*P.neg(:, :, ii) - Ktil_2*Htil_2*P.neg(:, :, ii);
            
            S(:, :, ii) = Hblock*Pblock*Hblock' + Rblock;
-       end
-       
+       end      
    else % No Measurements
        x.pos(:, ii) = x.neg(:, ii);
        P.pos(:, :, ii) = P.neg(:, :, ii);

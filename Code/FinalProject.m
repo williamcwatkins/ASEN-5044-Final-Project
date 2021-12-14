@@ -85,26 +85,29 @@ State_Ydot = State_out(:, 4);
 
 figure()
 subplot(4, 1, 1)
-plot(Time_out, State_out(:, 1))
+plot(Time_out, State_out(:, 1), 'k')
 xlabel('Time [s]')
 ylabel('X [km]')
-ylim([-1e4, 1e4])
+set(gca, 'FontSize', 14)
 
 subplot(4, 1, 2)
-plot(Time_out, State_out(:, 2))
+plot(Time_out, State_out(:, 2), 'k')
 xlabel('Time [s]')
 ylabel('Xdot [km/s]')
+set(gca, 'FontSize', 14)
 
 subplot(4, 1, 3)
-plot(Time_out, State_out(:, 3))
+plot(Time_out, State_out(:, 3), 'k')
 xlabel('Time [s]')
 ylabel('Y [km]')
 ylim([-1e4, 1e4])
+set(gca, 'FontSize', 14)
 
 subplot(4, 1, 4)
-plot(Time_out, State_out(:, 4))
+plot(Time_out, State_out(:, 4), 'k')
 xlabel('Time [s]')
 ylabel('Ydot [km/s]')
+set(gca, 'FontSize', 14)
 
 sgtitle('States vs Time, Full Nonlinear Dynamics Simulation')
 
@@ -152,7 +155,7 @@ figure
 hold on
 tl = tiledlayout(4,1);
 title(tl, "Full Nonlinear Model Data Simulation");
-xlabel(tl, "Time (secs)");
+xlabel(tl, "Time [s]");
 nexttile
 hold on
 for ii = 1:12
@@ -169,8 +172,9 @@ for ii = 1:12
         yline(pi);
         yline(-pi);
     end
-    scatter(Time_out(vis_index), rho(vis_index,ii));
-    ylabel('rho^i (km)');
+    scatter(Time_out(vis_index), rho(vis_index,ii), [], ColorSet(ii, :));
+    ylabel('\rho^i [km]');
+    set(gca, 'FontSize', 14)
 end
 
 nexttile
@@ -179,8 +183,9 @@ for ii = 1:12
     vis_index = find((phiCompare(:, ii) <= (pi/2 + thetaCompare(:, ii)) & phiCompare(:, ii) >= (-pi/2 + thetaCompare(:, ii))) | ...
             (phiCompare(:, ii) <= (pi/2 + thetaBound1Pos(:, ii)) & phiCompare(:, ii) >= (-pi/2 + thetaBound1Neg(:, ii))) | ...
             (phiCompare(:, ii) <= (pi/2 + thetaBound2Pos(:, ii)) & phiCompare(:, ii) >= (-pi/2 + thetaBound2Neg(:, ii))));
-    scatter(Time_out(vis_index), rho_dot(vis_index,ii));
-    ylabel('rhodot^i (km/s)');
+    scatter(Time_out(vis_index), rho_dot(vis_index,ii), [], ColorSet(ii, :));
+    ylabel('\rhodot^i [km/s]');
+    set(gca, 'FontSize', 14)
 end
 nexttile
 hold on
@@ -188,8 +193,9 @@ for ii = 1:12
     vis_index = find((phiCompare(:, ii) <= (pi/2 + thetaCompare(:, ii)) & phiCompare(:, ii) >= (-pi/2 + thetaCompare(:, ii))) | ...
             (phiCompare(:, ii) <= (pi/2 + thetaBound1Pos(:, ii)) & phiCompare(:, ii) >= (-pi/2 + thetaBound1Neg(:, ii))) | ...
             (phiCompare(:, ii) <= (pi/2 + thetaBound2Pos(:, ii)) & phiCompare(:, ii) >= (-pi/2 + thetaBound2Neg(:, ii))));
-    scatter(Time_out(vis_index), phi(vis_index,ii));
-    ylabel('\phi^i (rads)');
+    scatter(Time_out(vis_index), phi(vis_index,ii), [], ColorSet(ii, :));
+    ylabel('\phi^i [rads]');
+    set(gca, 'FontSize', 14)
 end
 nexttile
 hold on
@@ -197,8 +203,9 @@ for ii = 1:12
     vis_index = find((phiCompare(:, ii) <= (pi/2 + thetaCompare(:, ii)) & phiCompare(:, ii) >= (-pi/2 + thetaCompare(:, ii))) | ...
             (phiCompare(:, ii) <= (pi/2 + thetaBound1Pos(:, ii)) & phiCompare(:, ii) >= (-pi/2 + thetaBound1Neg(:, ii))) | ...
             (phiCompare(:, ii) <= (pi/2 + thetaBound2Pos(:, ii)) & phiCompare(:, ii) >= (-pi/2 + thetaBound2Neg(:, ii))));
-    scatter(Time_out(vis_index), visibleStation(vis_index,ii));
+    scatter(Time_out(vis_index), visibleStation(vis_index,ii), [], ColorSet(ii, :));
     ylabel('Visible Station ID');
+    set(gca, 'FontSize', 14)
 end
 
 
@@ -223,48 +230,56 @@ LinX(4, :) = nomCon(4,:) + pertX(4, :);
 %% perturbations plot
 figure()
 subplot(4, 1, 1)
-plot(Time_out, pertX(1, :))
+plot(Time_out, pertX(1, :), 'k')
 xlabel('Time [s]')
 ylabel('\deltaX [km]')
+set(gca, 'FontSize', 14)
 
 subplot(4, 1, 2)
-plot(Time_out, pertX(2, :))
+plot(Time_out, pertX(2, :), 'k')
 xlabel('Time [s]')
 ylabel('\deltaXdot [km/s]')
+set(gca, 'FontSize', 14)
 
 subplot(4, 1, 3)
-plot(Time_out, pertX(3, :))
+plot(Time_out, pertX(3, :), 'k')
 xlabel('Time [s]')
 ylabel('\deltaY [km]')
+set(gca, 'FontSize', 14)
 
 subplot(4, 1, 4)
-plot(Time_out, pertX(4, :))
+plot(Time_out, pertX(4, :), 'k')
 xlabel('Time [s]')
 ylabel('\deltaYdot [km/s]')
+set(gca, 'FontSize', 14)
 
 sgtitle('Linearized Approx Perturbations vs Time')
 
 % state plot
 figure()
 subplot(4, 1, 1)
-plot(Time_out, LinX(1, :))
+plot(Time_out, LinX(1, :), 'k')
 xlabel('Time [s]')
 ylabel('X [km]')
+set(gca, 'FontSize', 14)
 
 subplot(4, 1, 2)
-plot(Time_out, LinX(2, :))
+plot(Time_out, LinX(2, :), 'k')
 xlabel('Time [s]')
 ylabel('Xdot [km/s]')
+set(gca, 'FontSize', 14)
 
 subplot(4, 1, 3)
-plot(Time_out, LinX(3, :))
+plot(Time_out, LinX(3, :), 'k')
 xlabel('Time [s]')
 ylabel('Y [km]')
+set(gca, 'FontSize', 14)
 
 subplot(4, 1, 4)
-plot(Time_out, LinX(4, :))
+plot(Time_out, LinX(4, :), 'k')
 xlabel('Time [s]')
 ylabel('Ydot [km/s]')
+set(gca, 'FontSize', 14)
 
 sgtitle('States vs Time, Linearized Approximate Dynamics Soluiton')
 
@@ -277,40 +292,21 @@ sgtitle('States vs Time, Linearized Approximate Dynamics Soluiton')
 %     phiLinPert(:, ii) = atan2((pertX(3,:)' - TS_Y(:, ii)), (pertX(1,:)' - TS_X(:, ii)));
 % end
 
-for j = 1:12
-%     pertY(1,1) = sqrt((pertX(1,1)' - TS_X(1, j)).^2 + (pertX(3,1)' - TS_Y(1, j)).^2);
-%     pertY(2,1) = ((pertX(1,1)' - TS_X(1, j)).*(pertX(2,1)' - TS_Xdot(1, j)) + (pertX(3,1)' - TS_Y(1, j)).*(pertX(4,1)' - TS_Ydot(1, j)))./pertY(1, 1);
-%     pertY(3,1) = atan2((pertX(3,1)' - TS_Y(1, j)), (pertX(1,1)' - TS_X(1, j)));
-    for ii = 1:1401
-        x1 = nomCon(1,ii);
-        x2 = nomCon(2,ii);
-        x3 = nomCon(3,ii);
-        x4 = nomCon(4,ii);
-        z1 = TS_X(ii,1);
-        z2 = TS_Xdot(ii,1);
-        z3 = TS_Y(ii,1);
-        z4 = TS_Ydot(ii,1);
-        Cnom = subs(C);
-
-        H = Cnom;
-        pertY(:, ii) = H*pertX(:, ii);
-    end
-    
-    rhoLinPert(:,j) = pertY(1,:)';
-    rho_dotLinPert(:,j) = pertY(2,:)';
-    phiLinPert(:,j) = pertY(3,:)';
-
-    rhoLin(:, j) = sqrt((nomCon(1,:)' - TS_X(:, j)).^2 + (nomCon(3,:)' - TS_Y(:, j)).^2);
-    rho_dotLin(:, j) = ((nomCon(1,:)' - TS_X(:, j)).*(nomCon(2,:)' - TS_Xdot(:, j)) + (nomCon(3,:)' - TS_Y(:, j)).*(nomCon(4,:)' - TS_Ydot(:, j)))./rhoLin(:, j);
-    phiLin(:, j) = atan2((nomCon(3,:)' - TS_Y(:, j)), (nomCon(1,:)' - TS_X(:, j)));
-%     rhoLin(:, j) = sqrt((LinX(1,:)' - TS_X(:, j)).^2 + (LinX(3,:)' - TS_Y(:, j)).^2);
-%     rho_dotLin(:, j) = ((LinX(1,:)' - TS_X(:, j)).*(LinX(2,:)' - TS_Xdot(:, j)) + (LinX(3,:)' - TS_Y(:, j)).*(LinX(4,:)' - TS_Ydot(:, j)))./rhoLin(:, j);
-%     phiLin(:, j) = atan2((LinX(3,:)' - TS_Y(:, j)), (LinX(1,:)' - TS_X(:, j)));
+for ii = 1:12
+    rhoLinPert(:, ii) = sqrt((pertX(1,:)').^2 + (pertX(3,:)').^2);
+    rho_dotLinPert(:, ii) = ((pertX(1,:)').*(pertX(2,:)') + (pertX(3,:)').*(pertX(4,:)'))./rhoLinPert(:, ii);
+    phiLinPert(:, ii) = atan2((pertX(3,:)'), (pertX(1,:)'));
 end
 
-rhoLinNom = rhoLin + rhoLinPert;
-rhoDotLinNom = rho_dotLin + rho_dotLinPert;
-phiLinNom = phiLin + phiLinPert;
+for ii = 1:12
+    rhoLin(:, ii) = sqrt((LinX(1,:)' - TS_X(:, ii)).^2 + (LinX(3,:)' - TS_Y(:, ii)).^2);
+    rho_dotLin(:, ii) = ((LinX(1,:)' - TS_X(:, ii)).*(LinX(2,:)' - TS_Xdot(:, ii)) + (LinX(3,:)' - TS_Y(:, ii)).*(LinX(4,:)' - TS_Ydot(:, ii)))./rhoLin(:, ii);
+    phiLin(:, ii) = atan2((LinX(3,:)' - TS_Y(:, ii)), (LinX(1,:)' - TS_X(:, ii)));
+end
+
+rhoLinNom(:,:) = rho + rhoLinPert;
+rhoDotLinNom = rho_dotLinPert + rho_dot;
+phiLinNom = phi + phiLinPert;
 
 figure
 hold on
@@ -321,12 +317,9 @@ nexttile
 hold on
 DEBUG = 0;
 for ii = 1:12
-    vis_index = find((phiCompare(:, ii) <= (pi/2 + thetaCompare(:, ii)) & phiCompare(:, ii) >= (-pi/2 + thetaCompare(:, ii))) | ...
-            (phiCompare(:, ii) <= (pi/2 + thetaBound1Pos(:, ii)) & phiCompare(:, ii) >= (-pi/2 + thetaBound1Neg(:, ii))) | ...
-            (phiCompare(:, ii) <= (pi/2 + thetaBound2Pos(:, ii)) & phiCompare(:, ii) >= (-pi/2 + thetaBound2Neg(:, ii))));
-%     vis_index = find((phiLinNom(:, ii) <= (pi/2 + thetaCompare(:, ii)) & phiLinNom(:, ii) >= (-pi/2 + thetaCompare(:, ii))) | ...
-%             (phiLinNom(:, ii) <= (pi/2 + thetaBound1Pos(:, ii)) & phiLinNom(:, ii) >= (-pi/2 + thetaBound1Neg(:, ii))) | ...
-%             (phiLinNom(:, ii) <= (pi/2 + thetaBound2Pos(:, ii)) & phiLinNom(:, ii) >= (-pi/2 + thetaBound2Neg(:, ii))));
+    vis_index = find((phiLinNom(:, ii) <= (pi/2 + thetaCompare(:, ii)) & phiLinNom(:, ii) >= (-pi/2 + thetaCompare(:, ii))) | ...
+            (phiLinNom(:, ii) <= (pi/2 + thetaBound1Pos(:, ii)) & phiLinNom(:, ii) >= (-pi/2 + thetaBound1Neg(:, ii))) | ...
+            (phiLinNom(:, ii) <= (pi/2 + thetaBound2Pos(:, ii)) & phiLinNom(:, ii) >= (-pi/2 + thetaBound2Neg(:, ii))));
     if(DEBUG == 1)
 %         plot(Time_out, pi/2 + thetaBound1Pos(:,ii));
 % %         hold on
@@ -337,40 +330,40 @@ for ii = 1:12
         yline(pi);
         yline(-pi);
     end
-     scatter(Time_out(vis_index), rhoLinNom(vis_index,ii));
+     scatter(Time_out(vis_index), rhoLin(vis_index,ii));
     ylabel('rho^i (km)');
 end
 
 nexttile
 hold on
 for ii = 1:12
-    vis_index = find((phiCompare(:, ii) <= (pi/2 + thetaCompare(:, ii)) & phiCompare(:, ii) >= (-pi/2 + thetaCompare(:, ii))) | ...
-            (phiCompare(:, ii) <= (pi/2 + thetaBound1Pos(:, ii)) & phiCompare(:, ii) >= (-pi/2 + thetaBound1Neg(:, ii))) | ...
-            (phiCompare(:, ii) <= (pi/2 + thetaBound2Pos(:, ii)) & phiCompare(:, ii) >= (-pi/2 + thetaBound2Neg(:, ii))));
-    scatter(Time_out(vis_index), rhoDotLinNom(vis_index,ii));
+    vis_index = find((phiLin(:, ii) <= (pi/2 + thetaCompare(:, ii)) & phiLin(:, ii) >= (-pi/2 + thetaCompare(:, ii))) | ...
+            (phiLin(:, ii) <= (pi/2 + thetaBound1Pos(:, ii)) & phiLin(:, ii) >= (-pi/2 + thetaBound1Neg(:, ii))) | ...
+            (phiLin(:, ii) <= (pi/2 + thetaBound2Pos(:, ii)) & phiLin(:, ii) >= (-pi/2 + thetaBound2Neg(:, ii))));
+    scatter(Time_out(vis_index), rho_dotLin(vis_index,ii));
     ylabel('rhodot^i (km/s)');
 end
 nexttile
 hold on
 for ii = 1:12
-    vis_index = find((phiCompare(:, ii) <= (pi/2 + thetaCompare(:, ii)) & phiCompare(:, ii) >= (-pi/2 + thetaCompare(:, ii))) | ...
-            (phiCompare(:, ii) <= (pi/2 + thetaBound1Pos(:, ii)) & phiCompare(:, ii) >= (-pi/2 + thetaBound1Neg(:, ii))) | ...
-            (phiCompare(:, ii) <= (pi/2 + thetaBound2Pos(:, ii)) & phiCompare(:, ii) >= (-pi/2 + thetaBound2Neg(:, ii))));
+    vis_index = find((phiLin(:, ii) <= (pi/2 + thetaCompare(:, ii)) & phiLin(:, ii) >= (-pi/2 + thetaCompare(:, ii))) | ...
+            (phiLin(:, ii) <= (pi/2 + thetaBound1Pos(:, ii)) & phiLin(:, ii) >= (-pi/2 + thetaBound1Neg(:, ii))) | ...
+            (phiLin(:, ii) <= (pi/2 + thetaBound2Pos(:, ii)) & phiLin(:, ii) >= (-pi/2 + thetaBound2Neg(:, ii))));
     scatter(Time_out(vis_index), phiLinNom(vis_index,ii));
     ylabel('\phi^i (rads)');
 end
 nexttile
 hold on
 for ii = 1:12
-    vis_index = find((phiCompare(:, ii) <= (pi/2 + thetaCompare(:, ii)) & phiCompare(:, ii) >= (-pi/2 + thetaCompare(:, ii))) | ...
-            (phiCompare(:, ii) <= (pi/2 + thetaBound1Pos(:, ii)) & phiCompare(:, ii) >= (-pi/2 + thetaBound1Neg(:, ii))) | ...
-            (phiCompare(:, ii) <= (pi/2 + thetaBound2Pos(:, ii)) & phiCompare(:, ii) >= (-pi/2 + thetaBound2Neg(:, ii))));
+    vis_index = find((phiLin(:, ii) <= (pi/2 + thetaCompare(:, ii)) & phiLin(:, ii) >= (-pi/2 + thetaCompare(:, ii))) | ...
+            (phiLin(:, ii) <= (pi/2 + thetaBound1Pos(:, ii)) & phiLin(:, ii) >= (-pi/2 + thetaBound1Neg(:, ii))) | ...
+            (phiLin(:, ii) <= (pi/2 + thetaBound2Pos(:, ii)) & phiLin(:, ii) >= (-pi/2 + thetaBound2Neg(:, ii))));
     scatter(Time_out(vis_index), visibleStation(vis_index,ii));
     ylabel('Visible Station ID');
 end
 
 
-%%%^Will code as off 12/6/21 6:40 pm
+%%%^Will code as of 12/6/21 6:40 pm
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -421,7 +414,8 @@ for ii = 1:12
 end
 hold off
 xlabel('Time [s]')
-ylabel('\rho [km]')
+ylabel('\rho^i [km]')
+set(gca, 'FontSize', 14)
 
 subplot(4, 1, 2)
 hold on
@@ -433,7 +427,8 @@ for ii = 1:12
 end
 hold off
 xlabel('Time [s]')
-ylabel('\rhodot [km/s]')
+ylabel('\rhodot^i [km/s]')
+set(gca, 'FontSize', 14)
 
 subplot(4, 1, 3)
 hold on
@@ -445,7 +440,8 @@ for ii = 1:12
 end
 hold off
 xlabel('Time [s]')
-ylabel('\phi [rad]')
+ylabel('\phi^i [rad]')
+set(gca, 'FontSize', 14)
 
 subplot(4, 1, 4)
 hold on
@@ -458,19 +454,20 @@ end
 hold off
 xlabel('Time [s]')
 ylabel('Visible Station ID')
+set(gca, 'FontSize', 14)
 
 sgtitle('Provided ydata')
 
 %% Part II - LKF Tunning
-N = 100;
+N = 50;
+
+dx_true = [0, 0.075, 0, -0.021];
+Px_true = 1e4*diag([0.1, 0.01, 0.1, 0.01]);
+qp = 1e-6;
 
 for jj = 1:N
     % TMT 
-    p1 = unifrnd(-0.001, 0.001);
-    p2 = unifrnd(-0.001, 0.001);
-    p3 = unifrnd(-0.001, 0.001);
-    p4 = unifrnd(-0.001, 0.001);
-    perts = [p1, p2, p3, p4];
+    perts = mvnrnd(dx_true, qp*Px_true);
     
     MC_Initial_State = perts + initCon;
 
@@ -520,9 +517,7 @@ for jj = 1:N
         TMT_y_NL_noise_out(2, vis_index+1) = TMT_y_ALL(vis_index, kk, 2);
         TMT_y_NL_noise_out(3, vis_index+1) = TMT_y_ALL(vis_index, kk, 3);
         
-        TS_ID(vis_index+1) = repmat(kk, length(vis_index), 1);
-        
-        
+        TS_ID(vis_index+1) = repmat(kk, length(vis_index), 1);  
     end
     
     for ii = 2:1401
@@ -532,16 +527,16 @@ for jj = 1:N
     TMT_State = [TMT_X; TMT_Xdot; TMT_Y; TMT_Ydot];
 
     % NEES and NIS
-    Q_LKF = 50*Qtrue;
+    Q_LKF = 1500*Qtrue;
     R_LKF = Rtrue;
     
-    dx0 = perts;
-    P0 = diag(dx0);
+    dx0 = dx_true;
+    P0 = Px_true;
     
     [P, dx, x_stds, eytil, S] = LKF_StatOD(dx0, P0, TMT_ydata, dt, Q_LKF, R_LKF, Gam, TS_state, nomCon');
-    
-    x = dx.pos + nomCon;
-    ex = TMT_State - x;
+       
+    dxtrue = TMT_State - nomCon;
+    ex = dxtrue - dx.pos;
     for ii = 1:1401
         Ex(jj, ii) = ex(:, ii)'*(P.pos(:, :, ii))^-1*ex(:, ii);
         Ey(jj, ii) = eytil(1:3, ii)'*(S(1:3, 1:3, ii))^-1*eytil(1:3, ii);
@@ -549,7 +544,8 @@ for jj = 1:N
     
 end
 
-%%
+%% TMT Plots and Errors
+x = nomCon + dx.pos;
 
 figure()
 subplot(4, 1, 1)
@@ -560,7 +556,112 @@ plot(tvec, x(1, :), 'r')
 hold off
 xlabel('Time [s]')
 ylabel('X [km]')
-legend('TMT', 'Nominal', 'Estimated')
+set(gca, 'FontSize', 14)
+legend('TMT', 'Nominal', 'LKF Estimate')
+
+subplot(4, 1, 2)
+plot(tvec, TMT_State(2, :), 'k')
+hold on
+plot(tvec, nomCon(2, :), 'b')
+plot(tvec, x(2, :), 'r')
+hold off
+xlabel('Time [s]')
+ylabel('Xdot [km/s]')
+set(gca, 'FontSize', 14)
+
+subplot(4, 1, 3)
+plot(tvec, TMT_State(3, :), 'k')
+hold on
+plot(tvec, nomCon(3, :), 'b')
+plot(tvec, x(3, :), 'r')
+hold off
+xlabel('Time [s]')
+ylabel('Y [km]')
+set(gca, 'FontSize', 14)
+
+subplot(4, 1, 4)
+plot(tvec, TMT_State(4, :), 'k')
+hold on
+plot(tvec, nomCon(4, :), 'b')
+plot(tvec, x(4, :), 'r')
+hold off
+xlabel('Time [s]')
+ylabel('Ydot [km/s]')
+set(gca, 'FontSize', 14)
+
+sgtitle('TMT Simulated States')
+
+figure() % TMT Measurement Plots
+subplot(4, 1, 1)
+hold on
+for ii = 1:12
+    ID_index = find(TS_ID == ii);
+    scatter(tvec(ID_index), TMT_y_NL_noise_out(1, ID_index), [], ColorSet(ii, :))
+end
+hold off
+xlabel('Time [s]')
+ylabel('TMT \rho^i [km]')
+grid on 
+set(gca, 'FontSize', 14)
+
+subplot(4, 1, 2)
+hold on
+for ii = 1:12
+    ID_index = find(TS_ID == ii);
+    scatter(tvec(ID_index), TMT_y_NL_noise_out(2, ID_index), [], ColorSet(ii, :))
+end
+hold off
+xlabel('Time [s]')
+ylabel('TMT \rhodot^i [km/s]')
+grid on 
+set(gca, 'FontSize', 14)
+
+subplot(4, 1, 3)
+hold on
+for ii = 1:12
+    ID_index = find(TS_ID == ii);
+    scatter(tvec(ID_index), TMT_y_NL_noise_out(3, ID_index), [], ColorSet(ii, :))
+end
+hold off
+xlabel('Time [s]')
+ylabel('TMT \phi^i [rad]')
+grid on 
+set(gca, 'FontSize', 14) 
+
+subplot(4, 1, 4)
+hold on
+for ii = 1:12
+    ID_index = find(TS_ID == ii);
+    scatter(tvec(ID_index), TS_ID(ID_index), [], ColorSet(ii, :))
+end
+hold off
+xlabel('Time [s]')
+ylabel('Visible Station ID')
+grid on 
+set(gca, 'FontSize', 14)
+
+sgtitle('TMT Simulated Measurements vs Time')
+
+figure() % innovations
+subplot(3, 1, 1)
+scatter(tvec, eytil(1, :))
+xlabel('Time [s]')
+ylabel('\rho Innovation')
+set(gca, 'FontSize', 14)
+
+subplot(3, 1, 2)
+scatter(tvec, eytil(2, :))
+xlabel('Time [s]')
+ylabel('\rhodot Innovation')
+set(gca, 'FontSize', 14)
+
+subplot(3, 1, 3)
+scatter(tvec, eytil(3, :))
+xlabel('Time [s]')
+ylabel('\phi Innovation')
+set(gca, 'FontSize', 14)
+
+sgtitle('Innovations vs Time')
 
 
 figure()
@@ -572,6 +673,7 @@ plot(tvec, -2*x_stds(1, :), 'r')
 hold off
 xlabel('Time [s]')
 ylabel('X Error [km]')
+set(gca, 'FontSize', 14)
 
 subplot(4, 1, 2)
 plot(tvec, ex(2, :), 'k')
@@ -581,6 +683,7 @@ plot(tvec, -2*x_stds(2, :), 'r')
 hold off
 xlabel('Time [s]')
 ylabel('Xdot Error [km/s]')
+set(gca, 'FontSize', 14)
 
 subplot(4, 1, 3)
 plot(tvec, ex(3, :), 'k')
@@ -590,6 +693,7 @@ plot(tvec, -2*x_stds(3, :), 'r')
 hold off
 xlabel('Time [s]')
 ylabel('Y Error [km]')
+set(gca, 'FontSize', 14)
 
 subplot(4, 1, 4)
 plot(tvec, ex(4, :), 'k')
@@ -599,6 +703,9 @@ plot(tvec, -2*x_stds(4, :), 'r')
 hold off
 xlabel('Time [s]')
 ylabel('Ydot Error [km/s]')
+set(gca, 'FontSize', 14)
+
+sgtitle('States Estimation Error vs Time - LKF')
 
 % Consitancy Plots
 Ex_mean = mean(Ex);
@@ -640,19 +747,74 @@ legend('NIS @ t_k', 'r_1 Bound', 'r_2 Bound')
 grid on
 set(gca, 'FontSize', 14) 
 
+%% Part II - LKF Implementation 
+dx0 = [0, 0.075, 0, -0.021];
+P0 = Px_true;
+[P, dx, x_stds, eytil, S] = LKF_StatOD(dx0, P0, ydata, dt, Q_LKF, R_LKF, Gam, TS_state, nomCon');
+
+x = nomCon + dx.pos;
+
+figure()
+subplot(4, 1, 1)
+plot(tvec, x(1, :), 'k')
+hold on
+plot(tvec, x(1, :) + 2*x_stds(1, :), 'r--')
+plot(tvec, x(1, :) - 2*x_stds(1, :), 'r--')
+hold off
+xlabel('Time [s]')
+ylabel('Estimated X [km]')
+legend('Estimated State', '2\sigma')
+grid on
+set(gca, 'FontSize', 14)
+
+subplot(4, 1, 2)
+plot(tvec, x(2, :), 'k')
+hold on
+plot(tvec, x(2, :) + 2*x_stds(2, :), 'r--')
+plot(tvec, x(2, :) - 2*x_stds(2, :), 'r--')
+hold off
+xlabel('Time [s]')
+ylabel('Estimated Xdot [km/s]')
+grid on
+set(gca, 'FontSize', 14)
+
+subplot(4, 1, 3)
+plot(tvec, x(3, :), 'k')
+hold on
+plot(tvec, x(3, :) + 2*x_stds(1, :), 'r--')
+plot(tvec, x(3, :) - 2*x_stds(1, :), 'r--')
+hold off
+xlabel('Time [s]')
+ylabel('Estimated Y [km]')
+grid on
+set(gca, 'FontSize', 14)
+
+subplot(4, 1, 4)
+plot(tvec, x(4, :), 'k')
+hold on
+plot(tvec, x(4, :) + 2*x_stds(2, :), 'r--')
+plot(tvec, x(4, :) - 2*x_stds(2, :), 'r--')
+hold off
+xlabel('Time [s]')
+ylabel('Estimated Ydot [km/s]')
+grid on
+set(gca, 'FontSize', 14)
+
+sgtitle('Implemented LKF Estimated States vs Time')
+
 %% Part II - EKF Tunning
 
 N = 50;
 
+xtrue = initCon;
+Ptrue = diag([0.05, 0.00025, 0.05, 0.00025]);
+qp = 1e-6;
+
 for jj = 1:N
     % TMT 
-    p1 = unifrnd(-0.25, 0.25);
-    p2 = unifrnd(-0.05, 0.05);
-    p3 = unifrnd(-0.25, 0.25);
-    p4 = unifrnd(-0.05, 0.05);
-    perts = [p1, p2, p3, p4];
+    perts = mvnrnd(xtrue, Ptrue);
     
-    MC_Initial_State = perts + initCon;
+    MC_Initial_State = perts;
 
     TMT_X(1) = MC_Initial_State(1);
     TMT_Xdot(1) = MC_Initial_State(2);
@@ -728,6 +890,7 @@ for jj = 1:N
     
 end
 
+%%
 figure() % state estimation errors
 subplot(4, 1, 1)
 plot(tvec, ex(1, :), 'k')
@@ -784,7 +947,7 @@ figure() % innovations
 subplot(3, 1, 1)
 scatter(tvec, eytil(1, :))
 xlabel('Time [s]')
-ylabel('\rho Error [km]');
+ylabel('\rho^i Error [km]');
 grid on
 set(gca, 'FontSize', 14)
 ylim([-0.5 0.5])
@@ -792,14 +955,14 @@ ylim([-0.5 0.5])
 subplot(3, 1, 2)
 scatter(tvec, eytil(2, :))
 xlabel('Time [s]')
-ylabel('\rhodot Error [km/s]');
+ylabel('\rhodot^i Error [km/s]');
 grid on
 set(gca, 'FontSize', 14)
 
 subplot(3, 1, 3)
 scatter(tvec, eytil(3, :))
 xlabel('Time [s]')
-ylabel('\phi Error [rad]');
+ylabel('\phi^i Error [rad]');
 grid on
 set(gca, 'FontSize', 14)
 
@@ -898,7 +1061,7 @@ for ii = 1:12
 end
 hold off
 xlabel('Time [s]')
-ylabel('TMT \rho [km]')
+ylabel('TMT \rho^i [km]')
 grid on 
 set(gca, 'FontSize', 14)
 
@@ -910,7 +1073,7 @@ for ii = 1:12
 end
 hold off
 xlabel('Time [s]')
-ylabel('TMT \rhodot [km/s]')
+ylabel('TMT \rhodot^i [km/s]')
 grid on 
 set(gca, 'FontSize', 14)
 
@@ -922,7 +1085,7 @@ for ii = 1:12
 end
 hold off
 xlabel('Time [s]')
-ylabel('TMT \phi [rad]')
+ylabel('TMT \phi^i [rad]')
 grid on 
 set(gca, 'FontSize', 14) 
 
