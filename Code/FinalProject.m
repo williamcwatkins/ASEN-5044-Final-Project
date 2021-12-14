@@ -82,23 +82,28 @@ State_X = State_out(:, 1);
 State_Xdot = State_out(:, 2);
 State_Y = State_out(:, 3);
 State_Ydot = State_out(:, 4);
+% Perturbations
+State_X_Pert = State_out(:,1) - nomCon(1,:)';
+State_Xdot_Pert = State_out(:,2) - nomCon(2,:)';
+State_Y_Pert = State_out(:,3) - nomCon(3,:)';
+State_Ydot_Pert = State_out(:,4) - nomCon(4,:)';
 
 figure()
 subplot(4, 1, 1)
 plot(Time_out, State_out(:, 1), 'k')
-xlabel('Time [s]')
+% xlabel('Time [s]')
 ylabel('X [km]')
 set(gca, 'FontSize', 14)
 
 subplot(4, 1, 2)
 plot(Time_out, State_out(:, 2), 'k')
-xlabel('Time [s]')
-ylabel('Xdot [km/s]')
+% xlabel('Time [s]')
+ylabel('$\dot{X}$ [km/s]', 'Interpreter','latex')
 set(gca, 'FontSize', 14)
 
 subplot(4, 1, 3)
 plot(Time_out, State_out(:, 3), 'k')
-xlabel('Time [s]')
+% xlabel('Time [s]')
 ylabel('Y [km]')
 ylim([-1e4, 1e4])
 set(gca, 'FontSize', 14)
@@ -106,7 +111,7 @@ set(gca, 'FontSize', 14)
 subplot(4, 1, 4)
 plot(Time_out, State_out(:, 4), 'k')
 xlabel('Time [s]')
-ylabel('Ydot [km/s]')
+ylabel('$\dot{Y}$ [km/s]', 'Interpreter','latex')
 set(gca, 'FontSize', 14)
 
 sgtitle('States vs Time, Full Nonlinear Dynamics Simulation')
@@ -151,10 +156,10 @@ thetaBound2Pos = theta_TS;
 thetaBound2Pos(thetaBound2NegInd) = thetaBound2Pos(thetaBound2NegInd) + 2*pi;
 
 % Visible Tracking Stations
-figure
+figure('Position', [200, 200, 1200, 1000])
 hold on
 tl = tiledlayout(4,1);
-title(tl, "Full Nonlinear Model Data Simulation");
+title(tl, "Nonlinear Measurements");
 xlabel(tl, "Time [s]");
 nexttile
 hold on
@@ -184,7 +189,7 @@ for ii = 1:12
             (phiCompare(:, ii) <= (pi/2 + thetaBound1Pos(:, ii)) & phiCompare(:, ii) >= (-pi/2 + thetaBound1Neg(:, ii))) | ...
             (phiCompare(:, ii) <= (pi/2 + thetaBound2Pos(:, ii)) & phiCompare(:, ii) >= (-pi/2 + thetaBound2Neg(:, ii))));
     scatter(Time_out(vis_index), rho_dot(vis_index,ii), [], ColorSet(ii, :));
-    ylabel('\rhodot^i [km/s]');
+    ylabel('$\dot{rho}^i$ [km/s]', 'Interpreter','latex');
     set(gca, 'FontSize', 14)
 end
 nexttile
@@ -231,26 +236,26 @@ LinX(4, :) = nomCon(4,:) + pertX(4, :);
 figure()
 subplot(4, 1, 1)
 plot(Time_out, pertX(1, :), 'k')
-xlabel('Time [s]')
-ylabel('\deltaX [km]')
+% xlabel('Time [s]')
+ylabel('\delta X [km]')
 set(gca, 'FontSize', 14)
 
 subplot(4, 1, 2)
 plot(Time_out, pertX(2, :), 'k')
-xlabel('Time [s]')
-ylabel('\deltaXdot [km/s]')
+% xlabel('Time [s]')
+ylabel('$\dot{\delta X}$ [km/s]', 'Interpreter','latex')
 set(gca, 'FontSize', 14)
 
 subplot(4, 1, 3)
 plot(Time_out, pertX(3, :), 'k')
-xlabel('Time [s]')
-ylabel('\deltaY [km]')
+% xlabel('Time [s]')
+ylabel('\delta Y [km]')
 set(gca, 'FontSize', 14)
 
 subplot(4, 1, 4)
 plot(Time_out, pertX(4, :), 'k')
 xlabel('Time [s]')
-ylabel('\deltaYdot [km/s]')
+ylabel('$\dot{\delta Y}$ [km/s]', 'Interpreter','latex')
 set(gca, 'FontSize', 14)
 
 sgtitle('Linearized Approx Perturbations vs Time')
@@ -259,67 +264,85 @@ sgtitle('Linearized Approx Perturbations vs Time')
 figure()
 subplot(4, 1, 1)
 plot(Time_out, LinX(1, :), 'k')
-xlabel('Time [s]')
+% xlabel('Time [s]')
 ylabel('X [km]')
 set(gca, 'FontSize', 14)
 
 subplot(4, 1, 2)
 plot(Time_out, LinX(2, :), 'k')
-xlabel('Time [s]')
-ylabel('Xdot [km/s]')
+% xlabel('Time [s]')
+ylabel('$\dot{X}$ [km/s]', 'Interpreter','latex')
 set(gca, 'FontSize', 14)
 
 subplot(4, 1, 3)
 plot(Time_out, LinX(3, :), 'k')
-xlabel('Time [s]')
+% xlabel('Time [s]')
 ylabel('Y [km]')
 set(gca, 'FontSize', 14)
 
 subplot(4, 1, 4)
 plot(Time_out, LinX(4, :), 'k')
 xlabel('Time [s]')
-ylabel('Ydot [km/s]')
+ylabel('$\dot{Y}$ [km/s]', 'Interpreter','latex')
 set(gca, 'FontSize', 14)
 
 sgtitle('States vs Time, Linearized Approximate Dynamics Soluiton')
 
 %% Everything below here is wrong
 
-% Measurement Lin
-% for ii = 1:12
-%     rhoLinPert(:, ii) = sqrt((pertX(1,:)' - TS_X(:, ii)).^2 + (pertX(3,:)' - TS_Y(:, ii)).^2);
-%     rho_dotLinPert(:, ii) = ((pertX(1,:)' - TS_X(:, ii)).*(pertX(2,:)' - TS_Xdot(:, ii)) + (pertX(3,:)' - TS_Y(:, ii)).*(pertX(4,:)' - TS_Ydot(:, ii)))./rhoLinPert(:, ii);
-%     phiLinPert(:, ii) = atan2((pertX(3,:)' - TS_Y(:, ii)), (pertX(1,:)' - TS_X(:, ii)));
-% end
+for j = 1:12
+    for i = 1:1401
+        x(1) = nomCon(1,i);
+        x(2) = nomCon(2,i);
+        x(3) = nomCon(3,i);
+        x(4) = nomCon(4,i);
+        z(1) = TS_X(i,j);
+        z(2) = TS_Xdot(i,j);
+        z(3) = TS_Y(i,j);
+        z(4) = TS_Ydot(i,j);
+        Cnom = Ctil_Solver(x,z);
 
-for ii = 1:12
-    rhoLinPert(:, ii) = sqrt((pertX(1,:)').^2 + (pertX(3,:)').^2);
-    rho_dotLinPert(:, ii) = ((pertX(1,:)').*(pertX(2,:)') + (pertX(3,:)').*(pertX(4,:)'))./rhoLinPert(:, ii);
-    phiLinPert(:, ii) = atan2((pertX(3,:)'), (pertX(1,:)'));
+        H = Cnom;
+        pertY(:, i) = H*pertX(:, i);
+    end
+
+    rhoLinPert(:,j) = pertY(1,:)';
+    rho_dotLinPert(:,j) = pertY(2,:)';
+    phiLinPert(:,j) = pertY(3,:)';
+
+    rhoNom(:, j) = sqrt((nomCon(1,:)' - TS_X(:, j)).^2 + (nomCon(3,:)' - TS_Y(:, j)).^2);
+    rho_dotNom(:, j) = ((nomCon(1,:)' - TS_X(:, j)).*(nomCon(2,:)' - TS_Xdot(:, j)) + (nomCon(3,:)' - TS_Y(:, j)).*(nomCon(4,:)' - TS_Ydot(:, j)))./rhoNom(:, j);
+    phiNom(:, j) = atan2((nomCon(3,:)' - TS_Y(:, j)), (nomCon(1,:)' - TS_X(:, j)));
+
+    rhoLinNom(:,j) = rhoNom(:,j) + rhoLinPert(:,j);
+    rhoDotLinNom(:,j) = rho_dotNom(:,j) + rho_dotLinPert(:,j);
+    phiLinNom(:,j) = phiNom(:,j) + phiLinPert(:,j);
+    
+    findAbovePiRho = find(rhoLinNom(:,j) > pi);
+    findAbovePiPhi = find(phiLinNom(:,j) > pi);
+    findBelowPiRho = find(rhoLinNom(:,j) < -pi);
+    findBelowPiPhi = find(phiLinNom(:,j) < -pi);
+    
+%     rhoLinNom(findAbovePiRho,j) = rhoLinNom(findAbovePiRho,j) - 2*pi;
+    phiLinNom(findAbovePiPhi,j) = phiLinNom(findAbovePiPhi,j) - 2*pi;
+%     rhoLinNom(findBelowPiRho,j) = rhoLinNom(findBelowPiRho,j) + 2*pi;
+    phiLinNom(findBelowPiPhi,j) = phiLinNom(findBelowPiPhi,j) + 2*pi;
 end
 
-for ii = 1:12
-    rhoLin(:, ii) = sqrt((LinX(1,:)' - TS_X(:, ii)).^2 + (LinX(3,:)' - TS_Y(:, ii)).^2);
-    rho_dotLin(:, ii) = ((LinX(1,:)' - TS_X(:, ii)).*(LinX(2,:)' - TS_Xdot(:, ii)) + (LinX(3,:)' - TS_Y(:, ii)).*(LinX(4,:)' - TS_Ydot(:, ii)))./rhoLin(:, ii);
-    phiLin(:, ii) = atan2((LinX(3,:)' - TS_Y(:, ii)), (LinX(1,:)' - TS_X(:, ii)));
-end
 
-rhoLinNom(:,:) = rho + rhoLinPert;
-rhoDotLinNom = rho_dotLinPert + rho_dot;
-phiLinNom = phi + phiLinPert;
-
-figure
+figure('Position', [200, 200, 1200, 1000])
 hold on
 tl = tiledlayout(4,1);
-title(tl, "Approximate Linearized Model Data Simulation");
-xlabel(tl, "Time (secs)");
+title(tl, "Linearized Measurements");
+xlabel(tl, "Time [s]");
 nexttile
 hold on
+ylim([0 2500]);
 DEBUG = 0;
 for ii = 1:12
-    vis_index = find((phiLinNom(:, ii) <= (pi/2 + thetaCompare(:, ii)) & phiLinNom(:, ii) >= (-pi/2 + thetaCompare(:, ii))) | ...
-            (phiLinNom(:, ii) <= (pi/2 + thetaBound1Pos(:, ii)) & phiLinNom(:, ii) >= (-pi/2 + thetaBound1Neg(:, ii))) | ...
-            (phiLinNom(:, ii) <= (pi/2 + thetaBound2Pos(:, ii)) & phiLinNom(:, ii) >= (-pi/2 + thetaBound2Neg(:, ii))));
+    vis_index = find((phiCompare(:, ii) <= (pi/2 + thetaCompare(:, ii)) & phiCompare(:, ii) >= (-pi/2 + thetaCompare(:, ii))) | ...
+            (phiCompare(:, ii) <= (pi/2 + thetaBound1Pos(:, ii)) & phiCompare(:, ii) >= (-pi/2 + thetaBound1Neg(:, ii))) | ...
+            (phiCompare(:, ii) <= (pi/2 + thetaBound2Pos(:, ii)) & phiCompare(:, ii) >= (-pi/2 + thetaBound2Neg(:, ii))));
     if(DEBUG == 1)
 %         plot(Time_out, pi/2 + thetaBound1Pos(:,ii));
 % %         hold on
@@ -330,41 +353,113 @@ for ii = 1:12
         yline(pi);
         yline(-pi);
     end
-     scatter(Time_out(vis_index), rhoLin(vis_index,ii));
-    ylabel('rho^i (km)');
+     scatter(Time_out(vis_index), rhoLinNom(vis_index,ii));
+    ylabel('\rho^i [km]');
 end
 
 nexttile
 hold on
 for ii = 1:12
-    vis_index = find((phiLin(:, ii) <= (pi/2 + thetaCompare(:, ii)) & phiLin(:, ii) >= (-pi/2 + thetaCompare(:, ii))) | ...
-            (phiLin(:, ii) <= (pi/2 + thetaBound1Pos(:, ii)) & phiLin(:, ii) >= (-pi/2 + thetaBound1Neg(:, ii))) | ...
-            (phiLin(:, ii) <= (pi/2 + thetaBound2Pos(:, ii)) & phiLin(:, ii) >= (-pi/2 + thetaBound2Neg(:, ii))));
-    scatter(Time_out(vis_index), rho_dotLin(vis_index,ii));
-    ylabel('rhodot^i (km/s)');
+%     vis_index = find((phiLin(:, ii) <= (pi/2 + thetaCompare(:, ii)) & phiLin(:, ii) >= (-pi/2 + thetaCompare(:, ii))) | ...
+%             (phiLin(:, ii) <= (pi/2 + thetaBound1Pos(:, ii)) & phiLin(:, ii) >= (-pi/2 + thetaBound1Neg(:, ii))) | ...
+%             (phiLin(:, ii) <= (pi/2 + thetaBound2Pos(:, ii)) & phiLin(:, ii) >= (-pi/2 + thetaBound2Neg(:, ii))));
+    vis_index = find((phiCompare(:, ii) <= (pi/2 + thetaCompare(:, ii)) & phiCompare(:, ii) >= (-pi/2 + thetaCompare(:, ii))) | ...
+            (phiCompare(:, ii) <= (pi/2 + thetaBound1Pos(:, ii)) & phiCompare(:, ii) >= (-pi/2 + thetaBound1Neg(:, ii))) | ...
+            (phiCompare(:, ii) <= (pi/2 + thetaBound2Pos(:, ii)) & phiCompare(:, ii) >= (-pi/2 + thetaBound2Neg(:, ii))));
+    scatter(Time_out(vis_index), rhoDotLinNom(vis_index,ii));
+    ylabel('$\dot{\rho}^i$ [km/s]', 'Interpreter','latex');
 end
 nexttile
 hold on
 for ii = 1:12
-    vis_index = find((phiLin(:, ii) <= (pi/2 + thetaCompare(:, ii)) & phiLin(:, ii) >= (-pi/2 + thetaCompare(:, ii))) | ...
-            (phiLin(:, ii) <= (pi/2 + thetaBound1Pos(:, ii)) & phiLin(:, ii) >= (-pi/2 + thetaBound1Neg(:, ii))) | ...
-            (phiLin(:, ii) <= (pi/2 + thetaBound2Pos(:, ii)) & phiLin(:, ii) >= (-pi/2 + thetaBound2Neg(:, ii))));
+    vis_index = find((phiCompare(:, ii) <= (pi/2 + thetaCompare(:, ii)) & phiCompare(:, ii) >= (-pi/2 + thetaCompare(:, ii))) | ...
+            (phiCompare(:, ii) <= (pi/2 + thetaBound1Pos(:, ii)) & phiCompare(:, ii) >= (-pi/2 + thetaBound1Neg(:, ii))) | ...
+            (phiCompare(:, ii) <= (pi/2 + thetaBound2Pos(:, ii)) & phiCompare(:, ii) >= (-pi/2 + thetaBound2Neg(:, ii))));
     scatter(Time_out(vis_index), phiLinNom(vis_index,ii));
-    ylabel('\phi^i (rads)');
+    ylabel('\phi^i [rads]');
 end
 nexttile
 hold on
 for ii = 1:12
-    vis_index = find((phiLin(:, ii) <= (pi/2 + thetaCompare(:, ii)) & phiLin(:, ii) >= (-pi/2 + thetaCompare(:, ii))) | ...
-            (phiLin(:, ii) <= (pi/2 + thetaBound1Pos(:, ii)) & phiLin(:, ii) >= (-pi/2 + thetaBound1Neg(:, ii))) | ...
-            (phiLin(:, ii) <= (pi/2 + thetaBound2Pos(:, ii)) & phiLin(:, ii) >= (-pi/2 + thetaBound2Neg(:, ii))));
+    vis_index = find((phiCompare(:, ii) <= (pi/2 + thetaCompare(:, ii)) & phiCompare(:, ii) >= (-pi/2 + thetaCompare(:, ii))) | ...
+            (phiCompare(:, ii) <= (pi/2 + thetaBound1Pos(:, ii)) & phiCompare(:, ii) >= (-pi/2 + thetaBound1Neg(:, ii))) | ...
+            (phiCompare(:, ii) <= (pi/2 + thetaBound2Pos(:, ii)) & phiCompare(:, ii) >= (-pi/2 + thetaBound2Neg(:, ii))));
     scatter(Time_out(vis_index), visibleStation(vis_index,ii));
     ylabel('Visible Station ID');
 end
 
+%% Plotting section for report
+% We will plot the states on top of one another, as well as the
+% measurements
 
-%%%^Will code as of 12/6/21 6:40 pm
+figure('Position', [200, 200, 1200, 1000])
+t1 = tiledlayout(4,1);
+title(t1, "Simulated System State Perturbations");
+xlabel(t1, "Time [s]");
 
+nexttile;
+hold on;
+plot(Time_out, State_X_Pert, 'k')
+plot(Time_out, pertX(1,:), 'r');
+ylabel('$\delta X$ [km]', 'Interpreter','latex')
+set(gca, 'FontSize', 14)
+legend('Nonlinear Perturbations', 'Linearized Perturbations','location','bestoutside');
+
+nexttile;
+hold on;
+plot(Time_out, State_Xdot_Pert, 'k')
+plot(Time_out, pertX(2,:), 'r');
+ylabel('$\delta \dot{X}$ [km/s]', 'Interpreter','latex')
+set(gca, 'FontSize', 14)
+
+nexttile;
+hold on;
+plot(Time_out, State_Y_Pert, 'k')
+plot(Time_out, pertX(3,:), 'r');
+ylabel('$\delta Y$ [km]', 'Interpreter','latex')
+set(gca, 'FontSize', 14)
+
+ax1 = nexttile;
+hold on;
+plot(Time_out, State_Ydot_Pert, 'k')
+plot(Time_out, pertX(4,:), 'r');
+ylabel('$\delta \dot{Y}$ [km/s]', 'Interpreter','latex')
+set(gca, 'FontSize', 14)
+
+% System States next
+figure('Position', [200, 200, 1200, 1000])
+t1 = tiledlayout(4,1);
+title(t1, "Simulated System Dynamics");
+xlabel(t1, "Time [s]");
+
+nexttile;
+hold on;
+plot(Time_out, State_X, 'k')
+plot(Time_out, LinX(1,:), 'r');
+ylabel('$X$ [km]', 'Interpreter','latex')
+set(gca, 'FontSize', 14)
+legend('Nonlinear Dynamics', 'Linearized Dynamics','location','bestoutside');
+
+nexttile;
+hold on;
+plot(Time_out, State_Xdot, 'k')
+plot(Time_out, LinX(2,:), 'r');
+ylabel('$\dot{X}$ [km/s]', 'Interpreter','latex')
+set(gca, 'FontSize', 14)
+
+nexttile;
+hold on;
+plot(Time_out, State_Y, 'k')
+plot(Time_out, LinX(3,:), 'r');
+ylabel('$Y$ [km]', 'Interpreter','latex')
+set(gca, 'FontSize', 14)
+
+ax1 = nexttile;
+hold on;
+plot(Time_out, State_Ydot, 'k')
+plot(Time_out, LinX(4,:), 'r');
+ylabel('$\dot{Y}$ [km/s]', 'Interpreter','latex')
+set(gca, 'FontSize', 14)
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
