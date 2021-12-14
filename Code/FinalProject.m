@@ -392,7 +392,7 @@ end
 % We will plot the states on top of one another, as well as the
 % measurements
 
-figure('Position', [200, 200, 1200, 1000])
+figure('Position', [200, 200, 1600, 1000])
 t1 = tiledlayout(4,1);
 title(t1, "Simulated System State Perturbations");
 xlabel(t1, "Time [s]");
@@ -427,7 +427,7 @@ ylabel('$\delta \dot{Y}$ [km/s]', 'Interpreter','latex')
 set(gca, 'FontSize', 14)
 
 % System States next
-figure('Position', [200, 200, 1200, 1000])
+figure('Position', [200, 200, 1600, 1000])
 t1 = tiledlayout(4,1);
 title(t1, "Simulated System Dynamics");
 xlabel(t1, "Time [s]");
