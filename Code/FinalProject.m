@@ -392,7 +392,7 @@ end
 % We will plot the states on top of one another, as well as the
 % measurements
 
-figure('Position', [200, 200, 1200, 1000])
+figure('Position', [200, 200, 1600, 1000])
 t1 = tiledlayout(4,1);
 title(t1, "Simulated System State Perturbations");
 xlabel(t1, "Time [s]");
@@ -427,7 +427,7 @@ ylabel('$\delta \dot{Y}$ [km/s]', 'Interpreter','latex')
 set(gca, 'FontSize', 14)
 
 % System States next
-figure('Position', [200, 200, 1200, 1000])
+figure('Position', [200, 200, 1600, 1000])
 t1 = tiledlayout(4,1);
 title(t1, "Simulated System Dynamics");
 xlabel(t1, "Time [s]");
@@ -986,6 +986,51 @@ for jj = 1:N
 end
 
 %%
+
+figure()
+subplot(4, 1, 1)
+plot(tvec, TMT_State(1, :), 'k')
+hold on
+plot(tvec, nomCon(1, :), 'g')
+plot(tvec, x.pos(1, :), 'r')
+hold off
+xlabel('Time [s]')
+ylabel('X [km]')
+set(gca, 'FontSize', 14)
+legend('TMT', 'Nominal', 'LKF Estimate')
+
+subplot(4, 1, 2)
+plot(tvec, TMT_State(2, :), 'k')
+hold on
+plot(tvec, nomCon(2, :), 'g')
+plot(tvec, x.pos(2, :), 'r')
+hold off
+xlabel('Time [s]')
+ylabel('Xdot [km/s]')
+set(gca, 'FontSize', 14)
+
+subplot(4, 1, 3)
+plot(tvec, TMT_State(3, :), 'k')
+hold on
+plot(tvec, nomCon(3, :), 'g')
+plot(tvec, x.pos(3, :), 'r')
+hold off
+xlabel('Time [s]')
+ylabel('Y [km]')
+set(gca, 'FontSize', 14)
+
+subplot(4, 1, 4)
+plot(tvec, TMT_State(4, :), 'k')
+hold on
+plot(tvec, nomCon(4, :), 'g')
+plot(tvec, x.pos(4, :), 'r')
+hold off
+xlabel('Time [s]')
+ylabel('Ydot [km/s]')
+set(gca, 'FontSize', 14)
+
+sgtitle('TMT Simulated States')
+
 figure() % state estimation errors
 subplot(4, 1, 1)
 plot(tvec, ex(1, :), 'k')
@@ -1205,50 +1250,50 @@ P0 = 10*eye(n);
 
 [~, x, x_stds, ~, ~] = EKF_StatOD(x0, P0, ydata, dt, tvec, Q_EKF, R_EKF, Gam, TS_state);
 
-figure()
+figure('Position', [200, 200, 1800, 1000])
 subplot(4, 1, 1)
-plot(tvec, x.pos(1, :), 'k')
 hold on
-plot(tvec, x.pos(1, :) + 2*x_stds(1, :), 'r--')
-plot(tvec, x.pos(1, :) - 2*x_stds(1, :), 'r--')
+plot(tvec, TMT_X, 'k')
+plot(tvec, nomCon(1, :), 'g')
+plot(tvec, x.pos(1, :), 'r')
 hold off
 xlabel('Time [s]')
-ylabel('Estimated X [km]')
-legend('Estimated State', '2\sigma')
+ylabel('X [km]')
 grid on
 set(gca, 'FontSize', 14)
+legend('TMT', 'Nominal','EKF Estimate','location','bestoutside')
 
 subplot(4, 1, 2)
-plot(tvec, x.pos(2, :), 'k')
 hold on
-plot(tvec, x.pos(2, :) + 2*x_stds(2, :), 'r--')
-plot(tvec, x.pos(2, :) - 2*x_stds(2, :), 'r--')
+plot(tvec, TMT_Xdot, 'k')
+plot(tvec, nomCon(2, :), 'g')
+plot(tvec, x.pos(2, :), 'r')
 hold off
 xlabel('Time [s]')
-ylabel('Estimated Xdot [km/s]')
+ylabel('Xdot [km/s]')
 grid on
 set(gca, 'FontSize', 14)
 
 subplot(4, 1, 3)
-plot(tvec, x.pos(3, :), 'k')
 hold on
-plot(tvec, x.pos(3, :) + 2*x_stds(3, :), 'r--')
-plot(tvec, x.pos(3, :) - 2*x_stds(3, :), 'r--')
+plot(tvec, TMT_Y, 'k')
+plot(tvec, nomCon(3, :), 'g')
+plot(tvec, x.pos(3, :), 'r')
 hold off
 xlabel('Time [s]')
-ylabel('Estimated Y [km]')
+ylabel('Y [km]')
 grid on
 set(gca, 'FontSize', 14)
 
 subplot(4, 1, 4)
-plot(tvec, x.pos(4, :), 'k')
 hold on
-plot(tvec, x.pos(4, :) + 2*x_stds(4, :), 'r--')
-plot(tvec, x.pos(4, :) - 2*x_stds(4, :), 'r--')
+plot(tvec, TMT_Ydot, 'k')
+plot(tvec, nomCon(4, :), 'g')
+plot(tvec, x.pos(4, :), 'r')
 hold off
 xlabel('Time [s]')
-ylabel('Estimated Ydot [km/s]')
+ylabel('Ydot [km/s]')
 grid on
 set(gca, 'FontSize', 14)
 
-sgtitle('Implemented EKF Estimated States vs Time')
+sgtitle('TMT Simulated States')
